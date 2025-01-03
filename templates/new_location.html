@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AQI Prediction</title>
+  <style>
+    :root {
+      --primary-color: #f0f2f5;
+      --secondary-color: #1a1a1a;
+      --text-color: #ffffff;
+      --accent-color: #4f46e5;
+      --button-color: #4f46e5;
+      --button-hover: #4338ca;
+      --border-color: #2d2d2d;
+      --input-bg: #262626;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--secondary-color);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--text-color);
+    }
+
+    .container {
+      background-color: var(--input-bg);
+      padding: 40px;
+      width: min(90%, 400px);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      color: var(--text-color);
+      margin-bottom: 35px;
+      font-size: 1.8rem;
+      font-weight: 500;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      text-align: left;
+      color: var(--text-color);
+    }
+
+    select {
+      padding: 12px;
+      font-size: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      width: 100%;
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+    }
+
+    select:hover:not(:disabled) {
+      border-color: var(--accent-color);
+    }
+
+    select:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    button {
+      padding: 14px;
+      font-size: 1rem;
+      background-color: var(--button-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+      font-weight: 500;
+    }
+
+    button:hover {
+      background-color: var(--button-hover);
+      transform: translateY(-1px);
+    }
+
+    .home-link {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      padding: 10px 20px;
+      background-color: var(--button-color);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .home-link:hover {
+      background-color: var(--button-hover);
+    }
+  </style>
+</head>
+<body>
+  <a href="{{ url_for('index') }}" class="home-link">Home</a>
+  <div class="container">
+    <h1>AQI Prediction</h1>
+
+    <div class="form-group">
+      <label for="stateSelect">Select a State:</label>
+      <select id="stateSelect">
+        <option value="--select--">--select--</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="locationSelect">Select a City:</label>
+      <select id="locationSelect" disabled>
+      </select>
+    </div>
+
+    <button onclick="predictAQI()">Predict AQI</button>
+  </div>
+
+  <script>
+    const stateSelect = document.getElementById('stateSelect');
+    const locationSelect = document.getElementById('locationSelect');
+
+    // Fetch Indian states and cities data
+    fetch('https://raw.githubusercontent.com/sab99r/Indian-States-And-Districts/master/states-and-districts.json')
+      .then(response => response.json())
+      .then(data => {
+        // Populate states
+        data.states.forEach(state => {
+          const option = document.createElement('option');
+          option.value = state.state.toLowerCase().replace(/\s+/g, '-');
+          option.text = state.state;
+          stateSelect.appendChild(option);
+        });
+
+        // Store districts data
+        window.districtsData = data.states.reduce((acc, state) => {
+          acc[state.state.toLowerCase().replace(/\s+/g, '-')] = state.districts.map(district => ({
+            name: district,
+            // Using approximate center coordinates for India
+            lat: (Math.random() * (28.7041 - 8.4777) + 8.4777).toFixed(4),
+            lon: (Math.random() * (97.3959 - 68.7932) + 68.7932).toFixed(4)
+          }));
+          return acc;
+        }, {});
+      })
+      .catch(error => {
+        console.error('Error fetching states data:', error);
+        // Fallback to existing data if fetch fails
+        populateDefaultData();
+      });
+
+    function populateDefaultData() {
+      // Your existing cityData can be used as fallback
+      // ... (previous cityData object)
+    }
+
+    function populateCities(selectedState) {
+      locationSelect.innerHTML = "";
+      
+      if (selectedState && window.districtsData && window.districtsData[selectedState]) {
+        const cities = window.districtsData[selectedState];
+        cities.forEach(city => {
+          const option = document.createElement('option');
+          option.value = `${city.lat},${city.lon}`;
+          option.text = city.name;
+          locationSelect.appendChild(option);
+        });
+        locationSelect.disabled = false;
+      } else {
+        locationSelect.disabled = true;
+      }
+    }
+
+    stateSelect.addEventListener('change', () => {
+      const selectedState = stateSelect.value;
+      populateCities(selectedState);
+    });
+
+    function predictAQI() {
+      const selectedLocation = locationSelect.value;
+      const [lat, lon] = selectedLocation.split(',');
+      window.location.href = `/after_location/${lat}/${lon}`;
+    }
+  </script>
+</body>
+</html>

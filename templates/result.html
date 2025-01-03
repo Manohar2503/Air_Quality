@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Air Quality Index</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s ease; /* Smooth transition for background color change */
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 30px;
+            background-color: #252b37;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-top: -30px;
+            color: white;
+            box-shadow: 6px 10px 10px black;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .aqi-value {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .aqi-category {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .precautions {
+            font-size: 18px;
+            line-height: 1.6;
+            text-align: left;
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #252b37;
+        }
+
+        .home-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #0a080e;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        span{
+            font-size: 40px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('predict') }}" class="home-link">Home</a>
+
+    <div class="container">
+        <h1>Air Quality Index</h1>
+
+        <div class="aqi-value">
+            {% if prediction is defined %}
+                {{ prediction }}
+            {% else %}
+                N/A
+            {% endif %}
+        </div>
+
+        {% if prediction is defined %}
+            {% if prediction >= 0 and prediction <= 50 %}
+                <span>Good</span>
+            {% elif prediction >= 50 and prediction <= 100 %}
+                <span class="prediction-text satisfactory">Satisfactory</span>
+            {% elif prediction >= 100 and prediction <= 200 %}
+                <span class="prediction-text moderate">Moderate</span>
+            {% elif prediction >= 200 and prediction <= 300 %}
+                <span class="prediction-text poor">Poor</span>
+            {% elif prediction >= 300 and prediction <= 400 %}
+                <span class="prediction-text very-poor">Very Poor</span>
+            {% else %}
+                <span class="prediction-text severe">Severe</span>
+            {% endif %}
+        {% else %}
+            <span class="prediction-text unknown">Unknown</span>
+        {% endif %}
+
+        <div class="precautions">
+            {% if prediction is defined %}
+            <h3>Precautions:</h3>
+            <table>
+                <tbody>
+                {% if prediction >= 0 and prediction <= 55 %}
+                    <tr><td>Enjoy outdoor activities!</td></tr>
+                    <tr><td>Keep windows open for ventilation.</td></tr>
+                    <tr><td>Take a walk in the fresh air.</td></tr>
+                {% elif prediction >= 56 and prediction <= 100 %}
+                    <tr><td>Take normal precautions for sensitive groups.</td></tr>
+                    <tr><td>Avoid prolonged outdoor exertion.</td></tr>
+                    <tr><td>Use air purifiers indoors if needed.</td></tr>
+                {% elif prediction >= 101 and prediction <= 200 %}
+                    <tr><td>Avoid prolonged outdoor exertion.</td></tr>
+                    <tr><td>Reduce outdoor activities, especially if you have respiratory symptoms.</td></tr>
+                    <tr><td>Keep windows closed if air quality worsens.</td></tr>
+                {% elif prediction >= 201 and prediction <= 300 %}
+                    <tr><td>Avoid outdoor activities.</td></tr>
+                    <tr><td>Wear masks outdoors if necessary.</td></tr>
+                    <tr><td>Use air purifiers indoors to reduce indoor air pollution.</td></tr>
+                {% elif prediction >= 301 and prediction <= 400 %}
+                    <tr><td>Avoid outdoor activities.</td></tr>
+                    <tr><td>Wear masks outdoors if necessary.</td></tr>
+                    <tr><td>Use air purifiers indoors to reduce indoor air pollution.</td></tr>
+                {% else %}
+                    <tr><td>Avoid all outdoor activities.</td></tr>
+                    <tr><td>Stay indoors and keep windows closed.</td></tr>
+                    <tr><td>Use air purifiers with HEPA filters indoors.</td></tr>
+                {% endif %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Unable to determine precautions.</p>
+        {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Retrieve the AQI prediction value (assuming it's stored in a variable called 'prediction')
+        const prediction = {{ prediction }};
+
+        // Function to change the background color of the body based on the AQI value
+        function changeBackgroundColor() {
+            let body = document.querySelector('body');
+
+            if (prediction >= 0 && prediction <= 55) {
+                body.style.backgroundColor = '#00b050'; // Green for Good AQI
+            } else if (prediction >= 56 && prediction <= 100) {
+                body.style.backgroundColor = '#92d050'; // Yellow for Satisfactory AQI
+            } else if (prediction >= 101 && prediction <= 200) {
+                body.style.backgroundColor = '#ffff00'; // Orange for Moderate AQI
+            } else if (prediction >= 201 && prediction <= 300) {
+                body.style.backgroundColor = '#ff9900'; // Red for Poor AQI
+            } else if (prediction >= 301 && prediction <= 400) {
+                body.style.backgroundColor = '#ff0000';
+            } else {
+                body.style.backgroundColor = '#c00000'; // Purple for Severe AQI
+            }
+        }
+
+        // Call the function to change background color based on the AQI value
+        changeBackgroundColor();
+    </script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Air Quality Index</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #494d60 0%, #363a4f 100%);
+            position: relative;
+            padding: 20px;
+        }
+
+        .home-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 12px 24px;
+            background-color: rgba(40, 167, 69, 0.9);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .home-link:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .login {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            margin: 60px auto 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        form {
+            display: grid;
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .input-group {
+            text-align: left;
+        }
+
+        p {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        p b {
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        input[type="number"] {
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+
+        input[type="number"]:focus {
+            border-color: #4a90e2;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        #button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        #button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+        }
+
+        @media (max-width: 640px) {
+            .login {
+                padding: 20px;
+                margin-top: 40px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            form {
+                gap: 15px;
+            }
+
+            input[type="number"] {
+                padding: 10px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('index') }}" class="home-link">Home</a>
+    <div class="login">
+        <h1>Air Quality Index</h1>
+        <form action="{{ url_for('result') }}" method="post">
+            <div class="input-group">
+                <p><b>PM2.5</b> <small>(Usually ranges from 0.1 to 120)</small></p>
+                <input value="1" type="number" step="any" placeholder="Enter PM2.5 value" name="PM2.5" required>
+            </div>
+            <div class="input-group">
+                <p><b>PM10</b> <small>(Usually ranges from 0.1 to 120)</small></p>
+                <input value="1" type="number" step="any" placeholder="Enter PM10 value" name="PM10" required>
+            </div>
+            <div class="input-group">
+                <p><b>NO2</b> <small>(Usually ranges from 0.01 to 60)</small></p>
+                <input value="1" type="number" step="any" placeholder="Enter NO2 value" name="NO2" required>
+            </div>
+            <div class="input-group">
+                <p><b>NH3</b> <small>(Usually ranges from 0.1 to 120)</small></p>
+                <input value="1" type="number" step="any" placeholder="Enter NH3 value" name="NH3" required>
+            </div>
+            <div class="input-group">
+                <p><b>SO2</b> <small>(Usually ranges from 0.01 to 25)</small></p>
+                <input value="1" type="number" step="any" placeholder="Enter SO2 value" name="SO2" required>
+            </div>
+            <div class="input-group">
+                <p><b>CO</b> <small>(Usually ranges from 0 to 3)</small></p>
+                <input value="1" type="number" step="any" placeholder="Enter CO value" name="CO" required>
+            </div>
+            <div class="input-group">
+                <p><b>O3</b> <small>(Usually ranges from 0.01 to 65)</small></p>
+                <input value="1" type="number" step="any" placeholder="Enter O3 value" name="O3" required>
+            </div>
+            <button id="button" type="submit">Predict AQI</button>
+        </form>
+    </div>
+</body>
+</html>
