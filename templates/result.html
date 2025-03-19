@@ -13,7 +13,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            transition: background-color 0.3s ease; /* Smooth transition for background color change */
+            transition: background-color 0.3s ease; 
         }
 
         .container {
@@ -86,7 +86,6 @@
 
     <div class="container">
         <h1>Air Quality Index</h1>
-
         <div class="aqi-value">
             {% if prediction is defined %}
                 {{ prediction }}
@@ -152,29 +151,27 @@
     </div>
 
     <script>
-        // Retrieve the AQI prediction value (assuming it's stored in a variable called 'prediction')
+       
         const prediction = {{ prediction }};
-
-        // Function to change the background color of the body based on the AQI value
         function changeBackgroundColor() {
             let body = document.querySelector('body');
 
             if (prediction >= 0 && prediction <= 55) {
-                body.style.backgroundColor = '#00b050'; // Green for Good AQI
+                body.style.backgroundColor = '#00b050'; 
             } else if (prediction >= 56 && prediction <= 100) {
-                body.style.backgroundColor = '#92d050'; // Yellow for Satisfactory AQI
+                body.style.backgroundColor = '#92d050'; 
             } else if (prediction >= 101 && prediction <= 200) {
-                body.style.backgroundColor = '#ffff00'; // Orange for Moderate AQI
+                body.style.backgroundColor = '#ffff00'; 
             } else if (prediction >= 201 && prediction <= 300) {
-                body.style.backgroundColor = '#ff9900'; // Red for Poor AQI
+                body.style.backgroundColor = '#ff9900'; 
             } else if (prediction >= 301 && prediction <= 400) {
                 body.style.backgroundColor = '#ff0000';
             } else {
-                body.style.backgroundColor = '#c00000'; // Purple for Severe AQI
+                body.style.backgroundColor = '#c00000'; 
             }
         }
 
-        // Call the function to change background color based on the AQI value
+        
         changeBackgroundColor();
     </script>
 </body>

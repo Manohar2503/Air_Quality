@@ -1,4 +1,9 @@
 from flask import Flask, render_template, request
+import matplotlib
+matplotlib.use('Agg')  
+import matplotlib.pyplot as plt
+import io
+import base64
 import pickle
 import numpy as np
 import requests
@@ -9,21 +14,20 @@ import sklearn
 
 app = Flask(__name__)
 
-# Station Locator API
+
 def stationlocator(API, Latitude, Longitude):
     dt = requests.get(f'https://api.waqi.info/feed/geo:{Latitude};{Longitude}/?token={API}')
     doc = dt.text
     j = json.loads(doc)
-    data = j['data']  # Contains AQI value for each of the pollutants
-    nearest_station = data['city']['name']  # Name of the monitoring station
-    geo_loc = data['city']['geo']  # Geolocation of the monitoring station
-    time_of_retreival = data['time']['s']  # Time of monitoring
-    list_of_poll = list(data['iaqi'].keys())  # List of pollutants captured
+    data = j['data']  
+    nearest_station = data['city']['name']  
+    geo_loc = data['city']['geo']  
+    time_of_retreival = data['time']['s']  
+    list_of_poll = list(data['iaqi'].keys())  
     station_details = {'data': data, 'nearest_station': nearest_station, 'time_of_retreival': time_of_retreival, 'list_of_poll': list_of_poll, 'geo': geo_loc}
     print('Information successfully fetched from the nearest station')
     return station_details
 
-# Pollution concentration calculation
 def poll_conc(data, list_of_poll):
     criteria_poll = ['pm10', 'pm25', 'so2', 'no2', 'o3', 'co']
     poll_conc = []
@@ -43,7 +47,7 @@ def poll_conc(data, list_of_poll):
     poll_outs = {'poll_conc': poll_conc, 'criteria_poll': criteria_poll}
     return poll_outs
 
-# AQI calculation
+
 def aqi(poll_outs):
     AQI = []
 
@@ -60,16 +64,29 @@ def aqi(poll_outs):
             AQI.append('No Information available')
     return AQI
 
-# Main function to get AQI data
-def mainFunction(lat, lon):
-    station_details = stationlocator("5583344fe93b06116e9569799570df579a1ff3b4", lat, lon)
-    data = station_details['data']
-    list_of_poll = station_details['list_of_poll']
-    poll_outs = poll_conc(data, list_of_poll)
-    AQI = aqi(poll_outs)
-    return AQI
 
-# Load a model from file
+def mainFunction(lat, lon):
+    try:
+        station_details = stationlocator("5583344fe93b06116e9569799570df579a1ff3b4", lat, lon)
+        data = station_details['data']
+        list_of_poll = station_details['list_of_poll']
+        print("Station Data:", data)  
+
+        poll_outs = poll_conc(data, list_of_poll)
+        print("Pollution Concentrations:", poll_outs) 
+
+        AQI = aqi(poll_outs)
+        print("AQI Values:", AQI) 
+
+
+        AQI = [0 if val == 'No Information available' else val for val in AQI]
+
+        return AQI
+    except Exception as e:
+        print(f"Error in mainFunction: {e}")
+        raise  #
+
+
 def load_model(file_path):
     try:
         with open(file_path, 'rb') as file:
@@ -82,14 +99,14 @@ def load_model(file_path):
         print(f"An error occurred while loading the model: {e}")
         return None
 
-# Load both models
+
 file_path1 = 'newwtf.pkl'
 file_path2 = '5params.pkl'
 
 model1 = load_model(file_path1)
 model2 = load_model(file_path2)
 
-# Remove 'monotonic_cst' attribute if it exists
+
 if model2 and hasattr(model2, 'monotonic_cst'):
     del model2.monotonic_cst
 
@@ -100,6 +117,10 @@ def index():
 @app.route('/predict')
 def predict():
     return render_template('predict.html')
+
+@app.route('/select_location')
+def select_location():
+    return render_template("new_location.html")
 
 @app.route('/result', methods=['GET', 'POST'])
 def result():
@@ -117,21 +138,33 @@ def result():
     except KeyError:
         return render_template("error.html", message="Invalid input values. Please try again.")
 
-@app.route('/select_location')
-def select_location():
-    return render_template("new_location.html")
-
 @app.route('/after_location/<float:lat>/<float:lon>')
 def after_location(lat, lon):
     try:
         AQI = mainFunction(lat, lon)
-        print(AQI)
-        data = np.array([[AQI[0], AQI[1], AQI[2], AQI[3], AQI[4], AQI[5]]])
+        print("AQI Data:", AQI) 
+        print("Length of AQI:", len(AQI))  
+        print("AQI Data Shape:", np.array(AQI).shape)  
+
+      
+        AQI = [0 if val == 'No Information available' else val for val in AQI]
+
+        
+        data = np.array([[AQI[0], AQI[1], AQI[2], AQI[3], AQI[4], AQI[5]]])  
+        print("Input Data for Model:", data)  
+        print("Shape of data:", data.shape)  
+
+       
+        if model2:
+            print("Model2 input shape:", model2.n_features_in_)
+
         output = model2.predict(data)
-        return render_template("result2.html", prediction=output)
+        print("Model Prediction:", output)  
+
+        return render_template("result2.html", prediction=output, AQI=AQI)
     except Exception as e:
         print(f"Error occurred while fetching location data: {e}")
-        return render_template("error.html", message="Error occurred while processing the location data.")
+        return render_template("error.html", message=f"Error occurred while processing the location data: {str(e)}")
 
 if __name__ == '__main__':
     print(f"Scikit-learn version: {sklearn.__version__}")
