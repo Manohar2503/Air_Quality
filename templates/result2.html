@@ -1,330 +1,279 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Air Quality Index</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 20px;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background-color: #1e1e2f;
-            transition: background-color 0.3s ease;
-        }
+  <meta charset="UTF-8" />
+  <title>Air Quality Index</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #12131a;
+      --card-bg: #1d1e26;
+      --accent: #00c9a7;
+      --danger: #ff5e5e;
+      --warn: #fbbc05;
+      --font: #f5f5f5;
+      --light: #ccc;
+    }
 
-        .home-link {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 10px 20px;
-            background-color: #444;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        .home-link:hover {
-            background-color: #007bff;
-        }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--font);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-        .container {
-            max-width: 600px;
-            padding: 30px;
-            background: linear-gradient(145deg, #2e3244, #252837);
-            border-radius: 12px;
-            box-shadow: 10px 10px 20px #181a27, -10px -10px 20px #2e3245;
-            text-align: center;
-            color: #fff;
-            margin-bottom: 40px;
-            animation: fadeIn 1s forwards;
-        }
+    a.home-link {
+      align-self: flex-start;
+      margin-bottom: 20px;
+      color: var(--font);
+      text-decoration: none;
+      padding: 8px 16px;
+      background-color: #2c2f3a;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    a.home-link:hover {
+      background: var(--accent);
+      color: #000;
+    }
 
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-        }
+    .container, .graph-containers, #lineGraphContainer {
+      background-color: var(--card-bg);
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      width: 100%;
+      max-width: 700px;
+      margin-bottom: 30px;
+      animation: fadeIn 0.5s ease;
+    }
 
-        .aqi-value {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
+    h1 {
+      font-size: 2.2rem;
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-        .aqi-category {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: #ffcc00;
-        }
+    .aqi-value {
+      font-size: 3.5rem;
+      font-weight: 700;
+      text-align: center;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
 
-        .precautions {
-            font-size: 1rem;
-            line-height: 1.6;
-            text-align: left;
-            margin-top: 30px;
-        }
+    .aqi-category {
+      font-size: 1.4rem;
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--warn);
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
+    .precautions {
+      margin-top: 20px;
+    }
 
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #444;
-        }
+    .precautions h3 {
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+      color: var(--accent);
+    }
 
-        th {
-            background-color: #2e3244;
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-        canvas {
-            width: 100%;
-            max-height: 600px;
-            margin-top: 40px;
-            border-radius: 12px;
-        }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #333;
+      color: var(--light);
+    }
 
-        .show-graphs-btn {
-            background-color: #007bff;
-            color: #fff;
-            padding: 15px 30px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-bottom: 20px;
-        }
+    .show-graphs-btn {
+      background-color: var(--accent);
+      color: #000;
+      font-weight: 600;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: block;
+      margin: 0 auto 20px auto;
+    }
 
-        .show-graphs-btn:hover {
-            background-color: #0056b3;
-        }
+    .show-graphs-btn:hover {
+      background-color: #00a386;
+      transform: scale(1.05);
+    }
 
-        .graph-containers {
-            width: 90%;
-            max-width: 1200px;
-            padding: 20px;
-            margin:40px;
-            background: linear-gradient(145deg, #2e3244, #252837);
-            border-radius: 12px;
-            box-shadow: 10px 10px 20px #181a27, -10px -10px 20px #2e3245;
-            display: none;
-            animation: fadeIn 1s forwards;
-        }
-        #lineGraphContainer{
-            width: 90%;
-            max-width: 1200px;
-            padding: 20px;
-            margin:40px;
-            background: linear-gradient(145deg, #2e3244, #252837);
-            border-radius: 12px;
-            box-shadow: 10px 10px 20px #181a27, -10px -10px 20px #2e3245;
-            display: none;
-            animation: fadeIn 1s forwards;
-        }
+    canvas {
+      width: 100%;
+      max-height: 400px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
 
+    @media (max-width: 600px) {
+      .aqi-value {
+        font-size: 2.5rem;
+      }
+      .aqi-category {
+        font-size: 1.2rem;
+      }
+    }
 
-        @media screen and (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .aqi-value {
-                font-size: 3rem;
-            }
-
-            .precautions {
-                font-size: 0.9rem;
-            }
-
-            canvas {
-                max-height: 400px;
-            }
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-    <a href="{{ url_for('select_location') }}" class="home-link">Home</a>
 
-    <div class="container">
-        <h1>Air Quality Index</h1>
+  <a href="{{ url_for('select_location') }}" class="home-link">← Back to Location</a>
 
-        <div class="aqi-value">
-            {% if prediction is defined %}
-                {{ prediction }}
-            {% else %}
-                N/A
-            {% endif %}
-        </div>
+  <div class="container">
+    <h1>Air Quality Index</h1>
 
-        {% if prediction is defined %}
-            {% if prediction >= 0 and prediction <= 50 %}
-                <span class="aqi-category">Good</span>
-            {% elif prediction >= 51 and prediction <= 100 %}
-                <span class="aqi-category">Satisfactory</span>
-            {% elif prediction >= 101 and prediction <= 200 %}
-                <span class="aqi-category">Moderate</span>
-            {% elif prediction >= 201 and prediction <= 300 %}
-                <span class="aqi-category">Poor</span>
-            {% elif prediction >= 301 and prediction <= 400 %}
-                <span class="aqi-category">Very Poor</span>
-            {% else %}
-                <span class="aqi-category">Severe</span>
-            {% endif %}
-        {% else %}
-            <span class="aqi-category">Unknown</span>
+    <div class="aqi-value">
+      {% if prediction is defined %}
+        {{ prediction }}
+      {% else %}
+        N/A
+      {% endif %}
+    </div>
+
+    <div class="aqi-category">
+      {% if prediction is defined %}
+        {% if prediction <= 50 %} Good
+        {% elif prediction <= 100 %} Satisfactory
+        {% elif prediction <= 200 %} Moderate
+        {% elif prediction <= 300 %} Poor
+        {% elif prediction <= 400 %} Very Poor
+        {% else %} Severe
         {% endif %}
+      {% else %}
+        Unknown
+      {% endif %}
+    </div>
 
-        <div class="precautions">
-            {% if prediction is defined %}
-                <h3>Precautions:</h3>
-                <table>
-                    <tbody>
-                        {% if prediction >= 0 and prediction <= 55 %}
-                        <tr><td>Enjoy outdoor activities!</td></tr>
-                        <tr><td>Keep windows open for ventilation.</td></tr>
-                        <tr><td>Take a walk in the fresh air.</td></tr>
-                    {% elif prediction >= 56 and prediction <= 100 %}
-                        <tr><td>Take normal precautions for sensitive groups.</td></tr>
-                        <tr><td>Avoid prolonged outdoor exertion.</td></tr>
-                        <tr><td>Use air purifiers indoors if needed.</td></tr>
-                    {% elif prediction >= 101 and prediction <= 200 %}
-                        <tr><td>Avoid prolonged outdoor exertion.</td></tr>
-                        <tr><td>Reduce outdoor activities, especially if you have respiratory symptoms.</td></tr>
-                        <tr><td>Keep windows closed if air quality worsens.</td></tr>
-                    {% elif prediction >= 201 and prediction <= 300 %}
-                        <tr><td>Avoid outdoor activities.</td></tr>
-                        <tr><td>Wear masks outdoors if necessary.</td></tr>
-                        <tr><td>Use air purifiers indoors to reduce indoor air pollution.</td></tr>
-                    {% elif prediction >= 301 and prediction <= 400 %}
-                        <tr><td>Avoid outdoor activities.</td></tr>
-                        <tr><td>Wear masks outdoors if necessary.</td></tr>
-                        <tr><td>Use air purifiers indoors to reduce indoor air pollution.</td></tr>
-                    {% else %}
-                        <tr><td>Avoid all outdoor activities.</td></tr>
-                        <tr><td>Stay indoors and keep windows closed.</td></tr>
-                        <tr><td>Use air purifiers with HEPA filters indoors.</td></tr>
-                    {% endif %}
-                    </tbody>
-                </table>
+    <div class="precautions">
+      <h3>Precautions:</h3>
+      <table>
+        <tbody>
+          {% if prediction is defined %}
+            {% if prediction <= 55 %}
+              <tr><td>Enjoy outdoor activities!</td></tr>
+              <tr><td>Ventilate your home naturally.</td></tr>
+              <tr><td>Low risk to health.</td></tr>
+            {% elif prediction <= 100 %}
+              <tr><td>Normal precautions for sensitive groups.</td></tr>
+              <tr><td>Stay hydrated and take breaks.</td></tr>
+            {% elif prediction <= 200 %}
+              <tr><td>Avoid heavy outdoor exercise.</td></tr>
+              <tr><td>Use air purifiers indoors.</td></tr>
+            {% elif prediction <= 300 %}
+              <tr><td>Stay indoors unless necessary.</td></tr>
+              <tr><td>Use N95 masks outdoors.</td></tr>
+            {% elif prediction <= 400 %}
+              <tr><td>Avoid all outdoor exposure.</td></tr>
+              <tr><td>Keep windows shut.</td></tr>
             {% else %}
-                <p>Unable to determine precautions.</p>
+              <tr><td>Emergency conditions. Remain indoors.</td></tr>
+              <tr><td>Use HEPA purifiers and avoid all exposure.</td></tr>
             {% endif %}
-        </div>
+          {% else %}
+            <tr><td>Unable to determine due to missing data.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
     </div>
+  </div>
 
-    <button class="show-graphs-btn" onclick="toggleGraphs()">Show AQI Graphs</button>
+  <button class="show-graphs-btn" onclick="toggleGraphs()">Show AQI Graphs</button>
 
-    <div class="graph-containers" id="barGraphContainer">
-        <h2>Pollutant AQI Levels (Bar Chart)</h2>
-        <canvas id="barChart"></canvas>
-    </div>
+  <div class="graph-containers" id="barGraphContainer" style="display: none;">
+    <h2>Bar Chart - AQI by Pollutant</h2>
+    <canvas id="barChart"></canvas>
+  </div>
 
-    <div class="graph-container" id="lineGraphContainer">
-        <h2>Pollutant AQI Levels (Line Chart)</h2>
-        <canvas id="lineChart"></canvas>
-    </div>
+  <div class="graph-containers" id="lineGraphContainer" style="display: none;">
+    <h2>Line Chart - AQI Trends</h2>
+    <canvas id="lineChart"></canvas>
+  </div>
 
-    <script>
-        const pollutants = ['PM10', 'PM2.5', 'SO2', 'NO2', 'O3', 'CO'];
-        const aqiValues = {{ AQI | tojson }};
+  <script>
+    const prediction = {{ prediction | default(0) }};
+    const aqiValues = {{ AQI | tojson }};
+    const pollutants = ['PM10', 'PM2.5', 'SO2', 'NO2', 'O3', 'CO'];
 
-        const barCtx = document.getElementById('barChart').getContext('2d');
-        const barChart = new Chart(barCtx, {
-            type: 'bar',
-            data: {
-                labels: pollutants,
-                datasets: [{
-                    label: 'AQI Value',
-                    data: aqiValues,
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                animation: { duration: 2000, easing: 'easeInOutQuad' },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-        const lineCtx = document.getElementById('lineChart').getContext('2d');
-        const lineChart = new Chart(lineCtx, {
-            type: 'line',
-            data: {
-                labels: pollutants,
-                datasets: [{
-                    label: 'AQI Value',
-                    data: aqiValues,
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 2,
-                    fill: false
-                }]
-            },
-            options: {
-                responsive: true,
-                animation: { duration: 2000, easing: 'easeInOutQuad' },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-
-        function toggleGraphs() {
-            const barGraphContainer = document.getElementById('barGraphContainer');
-            const lineGraphContainer = document.getElementById('lineGraphContainer');
-            const isVisible = barGraphContainer.style.display === 'block';
-
-            barGraphContainer.style.display = isVisible ? 'none' : 'block';
-            lineGraphContainer.style.display = isVisible ? 'none' : 'block';
-        }
-        
-const prediction = {{ prediction }};
-
-function changeBackgroundColor() {
-    let body = document.querySelector('body');
-
-    if (prediction >= 0 && prediction <= 55) {
-        body.style.backgroundColor = '#00b050'; 
-    } else if (prediction >= 56 && prediction <= 100) {
-        body.style.backgroundColor = '#92d050'; 
-    } else if (prediction >= 101 && prediction <= 200) {
-        body.style.backgroundColor = '#ffff00'; 
-    } else if (prediction >= 201 && prediction <= 300) {
-        body.style.backgroundColor = '#ff9900'; 
-    } else if (prediction >= 301 && prediction <= 400) {
-        body.style.backgroundColor = '#ff0000';
-    } else {
-        body.style.backgroundColor = '#7e0023';
+    function toggleGraphs() {
+      const bar = document.getElementById('barGraphContainer');
+      const line = document.getElementById('lineGraphContainer');
+      const visible = bar.style.display === 'block';
+      bar.style.display = visible ? 'none' : 'block';
+      line.style.display = visible ? 'none' : 'block';
     }
-}
-changeBackgroundColor();
-</script>
-    </script>
+
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: pollutants,
+        datasets: [{
+          label: 'AQI Value',
+          data: aqiValues,
+          backgroundColor: '#00c9a7',
+          borderColor: '#00a386',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: { duration: 1000 },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    const lineCtx = document.getElementById('lineChart').getContext('2d');
+    new Chart(lineCtx, {
+      type: 'line',
+      data: {
+        labels: pollutants,
+        datasets: [{
+          label: 'AQI Value',
+          data: aqiValues,
+          borderColor: '#fbbc05',
+          backgroundColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 2,
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: { duration: 1000 },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  </script>
 </body>
 </html>
